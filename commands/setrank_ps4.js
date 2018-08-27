@@ -1,5 +1,5 @@
-exports.run = (client, message, args, links, guilds, fortniteAPI, lang, language, prefix, server) => {
-    links.query(`SELECT * FROM users WHERE userID = ${message.author.id}`, (err, row) => {
+exports.run = (client, message, args, guilds, fortniteAPI, lang, language, prefix, server) => {
+    guilds.query(`SELECT * FROM users WHERE userID = ${message.author.id}`, (err, row) => {
         if (row && row.length) {
             const username = row[0].username;
             guilds.query(`SELECT * FROM roles WHERE serverID = '${server}' ORDER by KD ASC`, (err, row) => {

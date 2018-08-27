@@ -1,4 +1,4 @@
-exports.run = (client, message, args, links, guilds, fortniteAPI, lang, language, prefix, server) => {
+exports.run = (client, message, args, guilds, fortniteAPI, lang, language, prefix, server) => {
     if(message.member.roles.find("name", "Bot")) {
         if (args[0]) { 
                   guilds.query(`UPDATE config SET prefix = '${args[0]}' WHERE serverID = '${server}'`, (err, row) => {

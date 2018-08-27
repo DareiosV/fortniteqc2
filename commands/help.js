@@ -1,4 +1,4 @@
-exports.run = (client, message, args, links, guilds, fortniteAPI, lang, language, prefix, server) => {
+exports.run = (client, message, args, guilds, fortniteAPI, lang, language, prefix, server) => {
     message.channel.send({embed: {
         color: 3447003,
         author: {

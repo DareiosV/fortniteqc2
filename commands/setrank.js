@@ -1,27 +1,37 @@
-exports.run = (client, message, args, links, guilds, fortniteAPI, lang, language, prefix, server) => {
-    links.query(`SELECT * FROM users WHERE userID=${message.author.id}`, (err, row) => {
-        if (row && row.length) {
-            const username = row[0].username;
-            guilds.query(`SELECT * FROM roles WHERE serverID = '${server}' ORDER by KD ASC`, (err, row) => {
-                if (row && row.length) {  
+exports.run = (client, message, args, guilds, fortniteAPI, lang, language, prefix, server) => {
+    const query = {
+        text: 'SELECT * FROM users WHERE userID = $1',
+        values: [message.author.id]
+      };
+    guilds.query(query, (err, row) => {
+        if (err) throw err;
+        if (row.rows && row.rows.length) {
+            const username = row.rows[0].username;
+            const query = {
+                text: 'SELECT * FROM roles WHERE serverID = $1 ORDER by KD ASC',
+                values: [server]
+              };
+            guilds.query(query, (err, row) => {
+                if (err) throw err;
+                if (row.rows && row.rows.length) {  
                     fortniteAPI.login().then(() => {
                     fortniteAPI
                     .getStatsBR(username, "pc", "alltime")
                         .then(stats => {
-                            if (stats.lifetimeStats["k/d"] > row[0].KD) {
-                                const ranks = row.map(rank => `${rank.roleID}`);
+                            if (stats.lifetimeStats["k/d"] > row.rows[0].KD) {
+                                const ranks = row.map(rank => `${rank[0].roleID}`);
                                 let removeRank = null;               
-                            row.forEach(function(rows) {
+                            row.forEach(function(rowe) {
 
-                                if (stats.lifetimeStats["k/d"] >  rows.KD && stats.lifetimeStats["k/d"] < rows.KDmax) {
-                                    if (message.member.roles.has(rows.roleID)) {
-                                        message.channel.send(lang[language].alreadyRole + rows.rolename + lang[language].KD + stats.lifetimeStats["k/d"]);
-                                        removeRank = rows.roleID;
+                                if (stats.lifetimeStats["k/d"] >  rowe.rows[0].KD && stats.lifetimeStats["k/d"] < rowe.rows[0].KDmax) {
+                                    if (message.member.roles.has(rowe.rows[0].roleID)) {
+                                        message.channel.send(lang[language].alreadyRole + rowe.rows[0].rolename + lang[language].KD + stats.lifetimeStats["k/d"]);
+                                        removeRank = rowe.rows[0].roleID;
                                     }
                                     else {
-                                        message.channel.send(lang[language].giveRole + rows.rolename + lang[language].KD + stats.lifetimeStats["k/d"]);
-                                        message.member.addRole(rows.roleID);
-                                        removeRank = rows.roleID;
+                                        message.channel.send(lang[language].giveRole + rowe.rows[0].rolename + lang[language].KD + stats.lifetimeStats["k/d"]);
+                                        message.member.addRole(rowe.rows[0].roleID);
+                                        removeRank = rowe.roles[0].roleID;
                                     }    
                                 }
                             });
@@ -32,7 +42,7 @@ exports.run = (client, message, args, links, guilds, fortniteAPI, lang, language
                         });
                         } else {
                             message.channel.send(lang[language].NotEnough + lang[language].KD + stats.lifetimeStats["k/d"]);
-                            const newRank = row.map(rank => `${rank.rolename} = ${rank.KD}+`).join('\n');
+                            const newRank = row.map(rank => `${rank[0].rolename} = ${rank[0].KD}+`).join('\n');
                             message.channel.send(
                                 newRank
                             );
@@ -45,10 +55,12 @@ exports.run = (client, message, args, links, guilds, fortniteAPI, lang, language
                     });
                 }
                 else {
+                    if (err) throw err;
                     message.channel.send(lang[language].NoRole);
                 }   
             });
         } else {
+            if (err) throw err;
             message.channel.send(lang[language].deleteError + prefix + "link pseudo")
         }
     });

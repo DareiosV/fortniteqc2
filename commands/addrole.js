@@ -1,13 +1,21 @@
-exports.run = (client, message, args, links, guilds, fortniteAPI, lang, language, prefix, server) => {
+exports.run = (client, message, args, guilds, fortniteAPI, lang, language, prefix, server) => {
     if(message.member.roles.find("name", "Bot")) {
         if (!isNaN(parseInt(args[0])) && !isNaN(parseInt(args[2])) && !isNaN(parseInt(args[3]))) { 
             if (args[0] && args[1] && args[2] && args[3]) {
-            guilds.query(`SELECT * FROM roles WHERE serverID = '${server}' and roleID = '${args[0]}' ORDER by KD ASC`, (err, row) => {
+                const query = {
+                    text: 'SELECT * FROM roles WHERE serverID = $1 and roleID = $2 ORDER by KD ASC',
+                    values: [server, args[0]]
+                  };
+            guilds.query(query, (err, row) => {
                 if (row && row.length) {
                     message.channel.send(lang[language].RoleExists);
                 }
                 else {
-                    guilds.query(`INSERT into roles (roleID, rolename, KD, KDmax, serverID) values ('${args[0]}', '${args[1]}', '${args[2]}', '${args[3]}', '${server}')`, (err, row) => {
+                    const query = {
+                        text: 'INSERT into roles (roleID, rolename, KD, KDmax, serverID) values ($1, $2, $3, $4, $5)',
+                        values: [args[0], args[1], args[2], args[3], server]
+                      };
+                    guilds.query(query, (err, row) => {
                         message.channel.send(lang[language].RoleSuccess + args[1]);
                     });
                 }

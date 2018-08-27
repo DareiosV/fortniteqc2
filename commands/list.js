@@ -1,4 +1,4 @@
-exports.run = (client, message, args, links, guilds, fortniteAPI, lang, language, prefix, server) => {
+exports.run = (client, message, args, guilds, fortniteAPI, lang, language, prefix, server) => {
     guilds.query(`SELECT * FROM roles WHERE serverID = '${server}' ORDER by KD ASC`, (err, row) => {
         const newRank = row.map(rank => `**${rank.rolename}:** ${rank.KD}+`).join('\n');
         message.channel.send({embed: {

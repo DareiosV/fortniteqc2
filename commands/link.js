@@ -1,10 +1,18 @@
-exports.run = (client, message, args, links, guilds, fortniteAPI, lang, language, prefix, server) => {
+exports.run = (client, message, args, guilds, fortniteAPI, lang, language, prefix, server) => {
     const username = args.join(" ");
-    links.query(`SELECT * FROM users WHERE userID = ${message.author.id}`, (err, row) => {
+    const query = {
+        text: 'SELECT * FROM users WHERE userID = $1',
+        values: [message.author.id]
+      };
+    guilds.query(query, (err, row) => {
         if (row && row.length) {
             message.channel.send(lang[language].alreadyLink + row[0].username + "!");
         } else {
-            links.query(`SELECT * FROM users WHERE username = '${username}'`, (err, row) => {
+            const query = {
+                text: 'SELECT * FROM users WHERE username = $1',
+                values: [username]
+              };
+            guilds.query(query, (err, row) => {
                 if (err) throw err;
                 if (row && row.length) {
                     message.channel.send(username + " " + lang[language].userExists)
@@ -13,7 +21,11 @@ exports.run = (client, message, args, links, guilds, fortniteAPI, lang, language
                         fortniteAPI
                             .checkPlayer(username, "pc")
                             .then(stats => {
-                                links.query(`INSERT INTO users (userID, username) VALUES ('${message.author.id}', '${username}')`, (err, row) => {
+                                const query = {
+                                    text: 'INSERT INTO users (userID, username) VALUES ($1, $2)',
+                                    values: [message.author.id, username]
+                                  };
+                                guilds.query(query, (err, row) => {
                                     if (err) throw err;
                                     message.channel.send(lang[language].linkSuccess + username + "!");
                                 });
